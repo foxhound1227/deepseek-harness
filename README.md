@@ -1,57 +1,27 @@
-# DeepSeek Harness
+# DeepSeek Harness Docker Auto-Builder
 
-English | [中文](README.zh.md)
+This repository is a dedicated **Automated Docker Build Configuration** for the official [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness).
 
-DeepSeek Harness (`dsh`) is an open-source agent harness developed by [DeepSeek AI](https://deepseek.com).
+## Architecture
 
-It uses an architecture where **everything is a plugin**, and is powered by [Cordis](https://github.com/cordiverse/cordis), whose design is described in [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper).
+This repository has been decoupled from the upstream source code. It serves solely as a GitHub Actions pipeline to automatically build and publish Docker images.
 
-## Developer preview
+- **Upstream Sync**: It does not require manual source code syncing. The GitHub Action pulls the latest source code directly from `deepseek-ai/deepseek-harness` during the build phase.
+- **Daily Builds**: A scheduled job runs every day at 0:00 UTC (8:00 AM Beijing time) to ensure the Docker image is always up-to-date with the upstream `master` branch.
+- **Docker Image**: The built image is automatically pushed to this repository's GitHub Container Registry (`ghcr.io`). 
 
-DeepSeek Harness is currently in _developer preview_ and is iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+## Usage
 
-## Run
+To run the latest built image on your NAS or server, execute:
 
-### Run from `npm`
-
-Install `Node.js`, then run:
-
-```sh
-npx @deepseek-ai/dsh web
+```bash
+docker run -d \
+  --name deepseek-harness \
+  -p 3080:3080 \
+  --restart unless-stopped \
+  ghcr.io/foxhound1227/deepseek-harness:latest
 ```
 
-The command starts the Web UI, served at `http://127.0.0.1:3080` by default. See [Web UI guide](docs/user/guide/index.md).
+## Manual Trigger
 
-### Run from source
-
-To run from a repository checkout:
-
-```sh
-git clone https://github.com/deepseek-ai/deepseek-harness.git
-cd deepseek-harness
-pnpm install
-pnpm run build
-pnpm dsh web
-```
-
-## Community and support
-
-- Feel free to submit feedback or bug reports through [GitHub Discussions](https://github.com/deepseek-ai/deepseek-harness/discussions).
-- Add the [`dsh-plugin`](https://github.com/topics/dsh-plugin) topic to your plugin repository for discoverability.
-- Join <a href="https://discord.gg/Ycq5dCaS4">DeepSeek Harness Discord community</a>.
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Development
-
-Start with the [development guide](docs/development.md) and [architecture documentation](docs/architecture.md).
-
-For agents, follow [AGENTS.md](AGENTS.md).
-
-## License
-
-[MIT](LICENSE)
-
-Third-party dependencies and their licenses are disclosed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+You can manually trigger a fresh build at any time by navigating to the **Actions** tab in this repository and running the `Daily Build and Publish` workflow.

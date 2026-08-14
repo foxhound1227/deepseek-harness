@@ -1,74 +1,27 @@
-# DeepSeek Harness
+# DeepSeek Harness 自动化 Docker 构建仓库
 
-[English](README.md) | 中文
+本仓库是一个专用于官方 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的 **Docker 自动化构建配置库**。
 
-DeepSeek Harness（`dsh`）是由 [DeepSeek AI](https://deepseek.com) 开发的开源 agent harness（智能体框架）。
+## 架构说明
 
-它采用**一切皆插件**的架构，并由 [Cordis](https://github.com/cordiverse/cordis) 驱动，其设计参见论文 [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper)。
+本仓库已剥离官方源代码，单纯作为 GitHub Actions 流水线，为您自动构建并分发最新的 Docker 镜像。
 
-## 开发者预览
+- **上游自动同步**: 您**不需要**手动同步（Sync fork）官方源代码。本仓库的 GitHub Action 会在构建时，自动从 `deepseek-ai/deepseek-harness` 官方仓库拉取最新鲜的代码。
+- **每日定时构建**: 每天北京时间早上 8:00（0:00 UTC），系统会自动触发一次全量构建，确保您的 Docker 镜像永远紧跟官方主分支进度。
+- **镜像分发**: 编译好的镜像会自动推送到本仓库绑定的 GitHub Container Registry (`ghcr.io`) 中。
 
-DeepSeek Harness 目前处于 _开发者预览_ 阶段，正在快速迭代。**未来将出现破坏兼容性的变更。**
+## 使用方法
 
-## 运行
+在您的 NAS 服务器或 Docker 环境中，直接运行以下命令即可启动最新版本的服务：
 
-### 通过 `npm` 运行
-
-安装 `Node.js`，然后运行：
-
-```sh
-npx @deepseek-ai/dsh web
+```bash
+docker run -d \
+  --name deepseek-harness \
+  -p 3080:3080 \
+  --restart unless-stopped \
+  ghcr.io/foxhound1227/deepseek-harness:latest
 ```
 
-该命令会启动 Web UI，默认地址为 `http://127.0.0.1:3080`。详见 [Web UI 指南](docs/user/guide/index.md)。
+## 手动触发更新
 
-### 从源码运行
-
-如需从仓库源码运行：
-
-```sh
-git clone https://github.com/deepseek-ai/deepseek-harness.git
-cd deepseek-harness
-pnpm install
-pnpm run build
-pnpm dsh web
-```
-
-## 社区与支持
-
-- 欢迎通过 [GitHub Discussions](https://github.com/deepseek-ai/deepseek-harness/discussions) 提交反馈或 bug 报告。
-- 为你的插件仓库添加 [`dsh-plugin`](https://github.com/topics/dsh-plugin) 话题，便于被发现。
-- 欢迎加入 DeepSeek Harness 企微群：扫码添加企微小助手并填写入群问卷，完成后小助手会邀请你入群。
-
-<table>
-  <thead>
-    <tr>
-      <th align="center">企微小助手</th>
-      <th align="center">入群问卷</th>
-      <th align="center">微信公众号</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td align="center"><img src="assets/community-wecom-assistant.png" alt="DeepSeek Harness 企微小助手二维码" width="180" height="180"></td>
-      <td align="center"><a href="https://trtgsjkv6r.feishu.cn/share/base/form/shrcnIt5twSVdLGD52KJBckGCgg"><img src="assets/community-wecom-survey.png" alt="DeepSeek Harness 入群问卷二维码" width="180" height="180"></a></td>
-      <td align="center"><img src="assets/community-wechat-official-account.png" alt="DeepSeek Harness 团队微信公众号二维码" width="180" height="180"></td>
-    </tr>
-  </tbody>
-</table>
-
-## 参与贡献
-
-参见 [CONTRIBUTING.md](CONTRIBUTING.md)。
-
-## 开发
-
-请先阅读[开发指南](docs/development.md)与[架构文档](docs/architecture.md)。
-
-面向 agent：请遵循 [AGENTS.md](AGENTS.md)。
-
-## 许可证
-
-[MIT](LICENSE)
-
-第三方依赖及其许可证见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+如果您急需拉取官方的某次紧急修复，无需等待第二天早上 8 点，您可以前往本仓库的 **Actions** 标签页，找到 `Daily Build and Publish` 工作流，点击 **Run workflow** 即可随时手动触发镜像的重新打包。
