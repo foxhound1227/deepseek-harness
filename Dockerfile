@@ -27,7 +27,7 @@ RUN sed -i '1s/^/\/\/ @ts-nocheck\n/' packages/client/connection/src/api-request
 
 # Polyfill crypto.randomUUID for frontend so it won't crash on insecure http:// IP access
 # This solves the 'crypto.randomUUID is not a function' error
-RUN sed -i '1s/^/if (!window.crypto) (window as any).crypto = {}; if (!window.crypto.randomUUID) window.crypto.randomUUID = () => "id-" + Math.random().toString(36).slice(2) + Date.now().toString(36);\n/' apps/web/src/main.ts
+RUN sed -i '1s/^/\/\/ @ts-nocheck\nif (!window.crypto) (window as any).crypto = {}; if (!window.crypto.randomUUID) window.crypto.randomUUID = (() => "10000000-1000-4000-8000-100000000000".replace(\/[018]\/g, () => (Math.random()*16|0).toString(16))) as any;\n/' apps/web/src/main.ts
 
 # Install dependencies
 RUN pnpm install
