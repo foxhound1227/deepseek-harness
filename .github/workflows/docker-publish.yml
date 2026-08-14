@@ -12,6 +12,10 @@ on:
       - '.dockerignore'
       - '.github/workflows/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   REGISTRY: ghcr.io
   # Use your repository name as the image name
