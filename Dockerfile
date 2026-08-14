@@ -6,7 +6,6 @@ RUN apt-get update && apt-get install -y \
     make \
     g++ \
     git \
-    socat \
     && rm -rf /var/lib/apt/lists/*
 
 # Install pnpm
@@ -18,6 +17,10 @@ WORKDIR /app
 # Copy all project files
 COPY . .
 
+# Patch the source code to allow binding to 0.0.0.0 natively
+# This prevents the 403 Forbidden errors that occur when using a reverse proxy or socat
+RUN sed -i "s/if (options.host === '0.0.0.0')/if (false)/g" packages/bundle/web-app/src/startup.ts
+
 # Install dependencies
 RUN pnpm install
 
@@ -27,5 +30,7 @@ RUN pnpm run build
 # Expose Web UI default port
 EXPOSE 3080
 
-# Start command
-CMD socat TCP-LISTEN:3080,fork,bind=0.0.0.0 TCP:127.0.0.1:3081 & pnpm dsh web --port 3081
+# Start command: natively bind to 0.0.0.0
+# If you are accessing via a domain, you can pass TRUSTED_HOST env variable when running the container
+# e.g., -e TRUSTED_HOST=http://your-nas-ip:3080
+CMD sh -c "pnpm dsh web --host 0.0.0.0 ${TRUSTED_HOST:+--trusted-host $TRUSTED_HOST}"
