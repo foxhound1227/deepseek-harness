@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     make \
     g++ \
     git \
+    socat \
     && rm -rf /var/lib/apt/lists/*
 
 # Install pnpm
@@ -26,9 +27,5 @@ RUN pnpm run build
 # Expose Web UI default port
 EXPOSE 3080
 
-# Environment variables
-ENV NODE_ENV=production
-ENV HOST=0.0.0.0
-
 # Start command
-CMD ["pnpm", "dsh", "web"]
+CMD socat TCP-LISTEN:3080,fork,bind=0.0.0.0 TCP:127.0.0.1:3081 & pnpm dsh web --port 3081
