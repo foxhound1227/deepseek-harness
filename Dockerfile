@@ -18,8 +18,15 @@ WORKDIR /app
 COPY . .
 
 # Patch the source code to allow binding to 0.0.0.0 natively
-# This prevents the 403 Forbidden errors that occur when using a reverse proxy or socat
 RUN sed -i "s/if (options.host === '0.0.0.0')/if (false)/g" packages/bundle/web-app/src/startup.ts
+
+# Patch backend security checks to always allow connections from any origin
+# This solves the '403 Forbidden' error permanently when running over NAS LAN IPs
+RUN sed -i 's/export function isTrustedApiRequest(request: ApiTrustRequest, trustedHosts: readonly string\[\]): boolean {/export function isTrustedApiRequest(request: ApiTrustRequest, trustedHosts: readonly string[]): boolean { return true;/g' packages/client/connection/src/api-request-trust.ts
+
+# Polyfill crypto.randomUUID for frontend so it won't crash on insecure http:// IP access
+# This solves the 'crypto.randomUUID is not a function' error
+RUN sed -i '1s/^/if (!window.crypto) (window as any).crypto = {}; if (!window.crypto.randomUUID) window.crypto.randomUUID = () => "id-" + Math.random().toString(36).slice(2) + Date.now().toString(36);\n/' apps/web/src/main.ts
 
 # Install dependencies
 RUN pnpm install
