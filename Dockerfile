@@ -22,7 +22,8 @@ RUN sed -i "s/if (options.host === '0.0.0.0')/if (false)/g" packages/bundle/web-
 
 # Patch backend security checks to always allow connections from any origin
 # This solves the '403 Forbidden' error permanently when running over NAS LAN IPs
-RUN sed -i 's/export function isTrustedApiRequest(request: ApiTrustRequest, trustedHosts: readonly string\[\]): boolean {/export function isTrustedApiRequest(request: ApiTrustRequest, trustedHosts: readonly string[]): boolean { return true;/g' packages/client/connection/src/api-request-trust.ts
+RUN sed -i '1s/^/\/\/ @ts-nocheck\n/' packages/client/connection/src/api-request-trust.ts && \
+    sed -i 's/export function isTrustedApiRequest(request: ApiTrustRequest, trustedHosts: readonly string\[\]): boolean {/export function isTrustedApiRequest(request: ApiTrustRequest, trustedHosts: readonly string[]): boolean { return true;/g' packages/client/connection/src/api-request-trust.ts
 
 # Polyfill crypto.randomUUID for frontend so it won't crash on insecure http:// IP access
 # This solves the 'crypto.randomUUID is not a function' error
